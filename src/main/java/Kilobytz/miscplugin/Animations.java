@@ -12,7 +12,21 @@ import java.lang.reflect.InvocationTargetException;
 
 public class Animations implements Listener {
 
-    private boolean hurtingALot = false;
+    private Main main;
+
+    public Animations(Main main) { this.main = main; }
+
+
+
+    private boolean hurtingALot;
+
+    public void configPop() {
+        try{
+            this.hurtingALot = main.getConfig().getBoolean("HurtToggle = ");
+        }catch(NullPointerException e) {
+            hurtingALot = false;
+        }
+    }
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -38,5 +52,7 @@ public class Animations implements Listener {
     }
     public void setTheHurt(boolean ouch) {
         this.hurtingALot = ouch;
+        main.getConfig().set("HurtToggle = " , ouch);
+        main.saveConfig();
     }
 }

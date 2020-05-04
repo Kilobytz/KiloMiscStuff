@@ -14,13 +14,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 
-
+    PluginManager pluginManager = getServer().getPluginManager();
     StatusListener sL = new StatusListener();
     EffectListener eL = new EffectListener();
     StatusHandler sH = new StatusHandler();
     StatusTimer sT = new StatusTimer(this);
     Crafting cR = new Crafting();
-    Animations aM = new Animations();
+    Animations aM = new Animations(this);
+    LoaderInit lI = new LoaderInit(this,pluginManager);
 
 
     @Override
@@ -28,7 +29,7 @@ public class Main extends JavaPlugin {
         registerListeners();
         loadClasses();
         createConfig();
-
+        startTimer();
     }
 
     @Override
@@ -57,9 +58,7 @@ public class Main extends JavaPlugin {
     }
 
 
-
     public void registerListeners() {
-        PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(this.sL, this);
         pluginManager.registerEvents(this.eL, this);
         pluginManager.registerEvents(this.aM,this);
@@ -70,7 +69,20 @@ public class Main extends JavaPlugin {
         sL.setStatus(sH);
         eL.setStatus(sH);
         eL.loadItems(cR);
+        aM.configPop();
     }
+
+    public void startTimer() {
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+
+            @Override
+            public void run() {
+                lI.entityCheck();
+            }
+        },50L, 1L);
+    }
+
+
     @Override
     public boolean onCommand(CommandSender sender,
                              Command command,
@@ -105,7 +117,7 @@ public class Main extends JavaPlugin {
             return true;
         }
         if (command.getName().equalsIgnoreCase("manglelist")) {
-            ArrayList<Player> viewMangled = new ArrayList<Player>(sH.getMangledPlayers());
+            ArrayList<Player> viewMangled = new ArrayList<>(sH.getMangledPlayers());
             int mSize = viewMangled.size();
             String mangledList = String.join(", ", viewMangled.toString());
             playerSent.sendMessage(mangledList);
